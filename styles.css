@@ -222,6 +222,12 @@ body {
     color: #fbbf24;
 }
 
+.setup-links {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+}
+
 .setup-link {
     display: inline-block;
     color: var(--primary);

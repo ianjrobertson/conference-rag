@@ -92,6 +92,22 @@ async function runSetupChecks() {
         setupGuideLink.href = 'SETUP.md';
     }
 
+    // Set Supabase URL configuration link (extract project ID from URL)
+    const supabaseConfigLink = document.getElementById('supabase-config-link');
+    if (supabaseConfigLink && typeof SUPABASE_CONFIG !== 'undefined' && SUPABASE_CONFIG.url) {
+        try {
+            const supabaseUrl = new URL(SUPABASE_CONFIG.url);
+            const projectId = supabaseUrl.hostname.split('.')[0]; // Extract subdomain
+            supabaseConfigLink.href = `https://supabase.com/dashboard/project/${projectId}/auth/url-configuration`;
+        } catch (err) {
+            // If URL parsing fails, hide the link
+            supabaseConfigLink.style.display = 'none';
+        }
+    } else {
+        // Hide link if no valid config
+        if (supabaseConfigLink) supabaseConfigLink.style.display = 'none';
+    }
+
     // Check 1: Config has real values (not placeholders)
     if (!configIsValid) {
         updateCheckItem(checkConfig, 'error', '❌', 'Configure Supabase credentials in config.js');
