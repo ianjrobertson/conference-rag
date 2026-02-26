@@ -39,3 +39,10 @@ supabase/.temp/
 # Python
 __pycache__/
 *.pyc
+.venv/
+
+# Secrets (NEVER commit these!)
+config.secret.json
+
+# Intermediate data outputs
+scripts/output/
