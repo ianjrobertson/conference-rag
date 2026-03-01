@@ -730,6 +730,97 @@ input:focus {
 }
 
 /* ============================================
+   ANALYTICS
+   ============================================ */
+
+.analytics-section {
+    padding: var(--spacing-lg) 0;
+    border-top: 1px solid var(--surface-light);
+    margin-top: var(--spacing-sm);
+}
+
+.analytics-section h2 {
+    font-size: 1.5rem;
+    margin-bottom: var(--spacing-lg);
+    color: var(--text);
+}
+
+.analytics-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--spacing-lg);
+}
+
+.analytics-card {
+    background: var(--surface);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-lg);
+    border: 1px solid var(--surface-light);
+}
+
+.analytics-card h3 {
+    font-size: 1rem;
+    color: var(--text);
+    margin-bottom: var(--spacing-md);
+}
+
+.analytics-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+}
+
+.analytics-table th {
+    text-align: left;
+    color: var(--text-muted);
+    font-weight: 500;
+    padding: 0.4rem 0.5rem;
+    border-bottom: 1px solid var(--surface-light);
+}
+
+.analytics-table td {
+    padding: 0.5rem 0.5rem;
+    border-bottom: 1px solid rgba(51, 65, 85, 0.5);
+    color: var(--text);
+    vertical-align: top;
+}
+
+.analytics-table tr:last-child td {
+    border-bottom: none;
+}
+
+.analytics-rank {
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    width: 1.5rem;
+    text-align: center;
+}
+
+.analytics-title {
+    line-height: 1.4;
+}
+
+.analytics-speaker {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+.analytics-count {
+    text-align: right;
+    font-weight: 600;
+    color: var(--primary);
+    white-space: nowrap;
+    width: 4rem;
+}
+
+.analytics-empty {
+    color: var(--text-muted);
+    text-align: center;
+    padding: var(--spacing-md);
+    font-size: 0.875rem;
+}
+
+/* ============================================
    RESPONSIVE DESIGN
    ============================================ */
 
@@ -760,5 +851,9 @@ input:focus {
 
     .panel-input {
         flex-direction: column;
+    }
+
+    .analytics-grid {
+        grid-template-columns: 1fr;
     }
 }

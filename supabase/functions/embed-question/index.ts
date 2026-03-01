@@ -32,7 +32,8 @@ Deno.serve(async (req) => {
     }
 
     // Parse the request body
-    const { question } = await req.json()
+    const { question, search_type } = await req.json()
+    const searchType = search_type ?? 'semantic'
     if (!question) {
       return new Response(JSON.stringify({ error: 'Missing question' }), {
         status: 400,
@@ -56,9 +57,22 @@ Deno.serve(async (req) => {
     const openaiData = await openaiRes.json()
     const embedding = openaiData.data[0].embedding
 
-    return new Response(JSON.stringify({ embedding }), {
+    const response = new Response(JSON.stringify({ embedding }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })
+
+    // Fire-and-forget: log question to analytics (errors must not affect the response)
+    try {
+      const adminClient = createClient(
+        Deno.env.get('SUPABASE_URL') ?? '',
+        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+      )
+      await adminClient.from('question_analytics').insert({ search_type: searchType, question })
+    } catch (analyticsErr) {
+      console.error('Analytics write failed:', analyticsErr)
+    }
+
+    return response
   } catch (err) {
     return new Response(JSON.stringify({ error: err.message }), {
       status: 500,

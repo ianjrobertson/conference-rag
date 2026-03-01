@@ -278,6 +278,8 @@ if (logoutBtn) {
 function showLogin() {
     if (loginScreen) loginScreen.classList.remove('hidden');
     if (appScreen) appScreen.classList.add('hidden');
+    const analyticsSection = document.getElementById('analytics');
+    if (analyticsSection) analyticsSection.style.display = 'none';
 }
 
 function showApp(user) {
@@ -286,6 +288,10 @@ function showApp(user) {
     if (userEmailSpan) userEmailSpan.textContent = user.email;
     // Check search readiness when user logs in
     checkSearchReadiness();
+    // Show and populate analytics
+    const analyticsSection = document.getElementById('analytics');
+    if (analyticsSection) analyticsSection.style.display = '';
+    loadAnalytics();
 }
 
 function showMessage(text, type) {
@@ -414,6 +420,10 @@ async function keywordSearch() {
     showLoading(true);
     clearResults('keyword');
 
+    // Log the question to analytics (fire-and-forget)
+    supabaseClient.from('question_analytics').insert({ search_type: 'keyword', question: query })
+        .then(() => {}).catch(() => {});
+
     try {
         // Search sentence_embeddings that contain the keyword (case-insensitive)
         const { data, error } = await supabaseClient
@@ -480,7 +490,7 @@ async function semanticSearch() {
 
     try {
         // Step 1: Get embedding
-        const embedding = await getEmbedding(query);
+        const embedding = await getEmbedding(query, 'semantic');
 
         // Step 2: Search for similar sentences
         const results = await searchSentences(embedding);
@@ -528,7 +538,7 @@ async function askQuestion() {
 
     try {
         // Step 1: Get embedding
-        const embedding = await getEmbedding(question);
+        const embedding = await getEmbedding(question, 'rag');
 
         // Step 2: Search for similar sentences
         const results = await searchSentences(embedding);
@@ -584,9 +594,9 @@ async function askQuestion() {
 // ============================================
 
 // Get embedding via Edge Function
-async function getEmbedding(text) {
+async function getEmbedding(text, searchType) {
     const { data, error } = await supabaseClient.functions.invoke('embed-question', {
-        body: { question: text }
+        body: { question: text, search_type: searchType }
     });
 
     if (error) {
@@ -728,6 +738,81 @@ function similarityBadge(similarity) {
         cls = 'similarity-low';
     }
     return `<span class="similarity-badge ${cls}">${pct}%</span>`;
+}
+
+// ============================================
+// ANALYTICS
+// ============================================
+
+async function loadAnalytics() {
+    if (!supabaseClient) return;
+
+    try {
+        const [citationRes, questionRes] = await Promise.all([
+            supabaseClient.from('citation_analytics').select('title, speaker, search_type').limit(500),
+            supabaseClient.from('question_analytics').select('question, search_type').limit(500),
+        ]);
+
+        // Aggregate citation counts client-side
+        const citationCounts = {};
+        for (const row of (citationRes.data || [])) {
+            const key = `${row.title}||${row.speaker}`;
+            if (!citationCounts[key]) {
+                citationCounts[key] = { title: row.title, speaker: row.speaker, count: 0 };
+            }
+            citationCounts[key].count++;
+        }
+        const topCitations = Object.values(citationCounts)
+            .sort((a, b) => b.count - a.count)
+            .slice(0, 10);
+
+        // Aggregate question counts client-side
+        const questionCounts = {};
+        for (const row of (questionRes.data || [])) {
+            const key = row.question;
+            if (!questionCounts[key]) {
+                questionCounts[key] = { question: row.question, count: 0 };
+            }
+            questionCounts[key].count++;
+        }
+        const topQuestions = Object.values(questionCounts)
+            .sort((a, b) => b.count - a.count)
+            .slice(0, 10);
+
+        // Render citation table
+        const citationTable = document.getElementById('citation-table');
+        if (citationTable) {
+            if (topCitations.length === 0) {
+                citationTable.innerHTML = '<tr><td colspan="3" class="analytics-empty">No data yet</td></tr>';
+            } else {
+                citationTable.innerHTML = topCitations.map((r, i) =>
+                    `<tr>
+                        <td class="analytics-rank">${i + 1}</td>
+                        <td class="analytics-title">${escapeHtml(r.title)}<br><span class="analytics-speaker">${escapeHtml(r.speaker)}</span></td>
+                        <td class="analytics-count">${r.count}</td>
+                    </tr>`
+                ).join('');
+            }
+        }
+
+        // Render question table
+        const questionTable = document.getElementById('question-table');
+        if (questionTable) {
+            if (topQuestions.length === 0) {
+                questionTable.innerHTML = '<tr><td colspan="2" class="analytics-empty">No data yet</td></tr>';
+            } else {
+                questionTable.innerHTML = topQuestions.map((r, i) =>
+                    `<tr>
+                        <td class="analytics-rank">${i + 1}</td>
+                        <td class="analytics-title">${escapeHtml(r.question)}</td>
+                        <td class="analytics-count">${r.count}</td>
+                    </tr>`
+                ).join('');
+            }
+        }
+    } catch (err) {
+        console.error('Failed to load analytics:', err);
+    }
 }
 
 // ============================================

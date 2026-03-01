@@ -133,6 +133,43 @@
                     <div class="search-results" id="rag-results"></div>
                 </div>
             </div>
+
+            <!-- Analytics Section (visible only when logged in) -->
+            <section id="analytics" class="analytics-section" style="display:none">
+                <h2>Analytics</h2>
+                <div class="analytics-grid">
+                    <div class="analytics-card">
+                        <h3>Top Cited Talks</h3>
+                        <table class="analytics-table">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Talk</th>
+                                    <th>Citations</th>
+                                </tr>
+                            </thead>
+                            <tbody id="citation-table">
+                                <tr><td colspan="3" class="analytics-empty">Loading...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="analytics-card">
+                        <h3>Top Questions</h3>
+                        <table class="analytics-table">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Question</th>
+                                    <th>Count</th>
+                                </tr>
+                            </thead>
+                            <tbody id="question-table">
+                                <tr><td colspan="3" class="analytics-empty">Loading...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
         </div>
     </div>
 

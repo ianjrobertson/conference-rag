@@ -71,9 +71,31 @@ ${talksContext}`
     const openaiData = await openaiRes.json()
     const answer = openaiData.choices[0].message.content
 
-    return new Response(JSON.stringify({ answer }), {
+    const response = new Response(JSON.stringify({ answer }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })
+
+    // Fire-and-forget: log citations and question to analytics
+    try {
+      const adminClient = createClient(
+        Deno.env.get('SUPABASE_URL') ?? '',
+        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+      )
+      const citationRows = context_talks.map((talk: { title: string; speaker: string; talk_id?: string }) => ({
+        search_type: 'rag',
+        talk_id: talk.talk_id ?? talk.title,
+        title: talk.title,
+        speaker: talk.speaker,
+      }))
+      await Promise.all([
+        adminClient.from('citation_analytics').insert(citationRows),
+        adminClient.from('question_analytics').insert({ search_type: 'rag', question }),
+      ])
+    } catch (analyticsErr) {
+      console.error('Analytics write failed:', analyticsErr)
+    }
+
+    return response
   } catch (err) {
     return new Response(JSON.stringify({ error: err.message }), {
       status: 500,
