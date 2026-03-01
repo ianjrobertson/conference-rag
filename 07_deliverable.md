@@ -22,6 +22,8 @@ I created an analytics feature for the app that tracks the questions that are be
 
 I thought this feature would be simple to implement and it would be interesting to see which questions and talks kept coming up repeatedly. 
 
+![Screenshot2](./Screenshot%202026-02-28%20at%207.32.44 PM.png)
+
 ---
 
 ## 5. Written Reflection
